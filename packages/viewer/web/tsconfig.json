@@ -1,0 +1,12 @@
+{
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    // "node" because App imports the report and server types from ../src.
+    "types": ["vite/client", "node"],
+    "noEmit": true
+  },
+  "include": ["src", "vite.config.ts"]
+}

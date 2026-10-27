@@ -1,0 +1,22 @@
+/* Screenshots with a light and a dark version: show the one matching the theme. */
+.dark .light-only,
+html:not(.dark) .dark-only {
+  display: none;
+}
+
+.screenshot {
+  margin: 24px 0;
+}
+
+.screenshot img {
+  width: 100%;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 8px;
+}
+
+.screenshot figcaption {
+  margin-top: 8px;
+  font-size: 14px;
+  color: var(--vp-c-text-2);
+  text-align: center;
+}

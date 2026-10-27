@@ -1,0 +1,32 @@
+{
+  "name": "react-render-pulse-monorepo",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.34.9",
+  "scripts": {
+    "build": "pnpm --filter \"./packages/*\" build",
+    "test": "pnpm --filter \"./packages/*\" test",
+    "typecheck": "pnpm -r typecheck",
+    "lint": "biome check .",
+    "format": "biome check --write .",
+    "size": "pnpm --filter react-render-pulse size",
+    "check:packages": "pnpm --filter \"./packages/*\" check:package",
+    "test:e2e": "pnpm --filter react-render-pulse-e2e test",
+    "bench": "pnpm --filter react-render-pulse-bench bench",
+    "docs:dev": "pnpm --filter react-render-pulse-docs dev",
+    "docs:build": "pnpm --filter react-render-pulse-docs build",
+    "changeset": "changeset",
+    "version-packages": "changeset version",
+    "release": "pnpm build && changeset publish"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.6.3",
+    "@changesets/cli": "^3.0.3",
+    "typescript": "^7.0.2"
+  }
+}

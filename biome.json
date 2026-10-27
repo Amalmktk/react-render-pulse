@@ -1,0 +1,49 @@
+{
+  "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+  "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
+  "files": {
+    "includes": [
+      "**",
+      "!**/dist",
+      "!**/dist-*",
+      "!**/.next",
+      "!**/node_modules",
+      "!docs/.vitepress/cache",
+      "!**/*.md",
+      "!**/*.yaml",
+      "!**/*.yml",
+      "!bench/results"
+    ]
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 120
+  },
+  "javascript": {
+    "formatter": { "quoteStyle": "double", "trailingCommas": "all", "semicolons": "always" }
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "style": {
+        "noNonNullAssertion": "off"
+      },
+      "suspicious": {
+        "noAssignInExpressions": "off"
+      }
+    }
+  },
+  "overrides": [
+    {
+      "includes": ["**/tests/**"],
+      "linter": { "rules": { "correctness": { "noComponentHookFactories": "off" } } }
+    },
+    {
+      "includes": ["bench/**"],
+      "linter": { "rules": { "suspicious": { "noArrayIndexKey": "off" } } }
+    }
+  ],
+  "assist": { "actions": { "source": { "organizeImports": "off" } } }
+}

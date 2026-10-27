@@ -1,0 +1,29 @@
+{
+  "name": "example-vite-react",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "build:profiling": "vite build --mode profiling",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "report": "react-render-pulse-viewer report .render-pulse/batches.jsonl",
+    "viewer": "react-render-pulse-viewer serve --file .render-pulse/batches.jsonl"
+  },
+  "dependencies": {
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "react-render-pulse": "workspace:^"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "react-render-pulse-collector": "workspace:^",
+    "react-render-pulse-viewer": "workspace:^",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.5"
+  }
+}

@@ -1,0 +1,5 @@
+# 000: Gap note
+
+Status: written at project start, October 2026.
+
+React DevTools' Profiler and why-did-you-render show exactly which components render and why, but only in development, on the developer's own fast machine, and with development-build behavior that differs from production. Full monitoring platforms (Sentry, Datadog RUM, New Relic and similar) measure real users at the page level: Web Vitals, long tasks, slow interactions. They rarely tie that data to the React component that caused it, and their React-specific features usually need a paid plan and their hosted backend. The gap is component-level render data from real users' devices, cheap enough to leave on in production, self-hostable, and without personal data. react-render-pulse fills it with `<RenderMonitor>`-wrapped areas, histograms aggregated in memory, a small collector you deploy yourself, and a viewer for slowest areas, worst devices and trends. It complements DevTools: render-pulse tells you _which_ area is slow for _whom_, and DevTools tells you _why_ once you can reproduce it.

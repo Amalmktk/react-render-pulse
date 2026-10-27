@@ -1,0 +1,6 @@
+packages:
+  - packages/*
+  - bench/*
+  - examples/*
+  - e2e
+  - docs

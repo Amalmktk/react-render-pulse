@@ -1,0 +1,20 @@
+{
+  "$schema": "https://unpkg.com/@changesets/config@3.1.1/schema.json",
+  "changelog": "@changesets/cli/changelog",
+  "commit": false,
+  "fixed": [],
+  "linked": [["react-render-pulse", "react-render-pulse-collector", "react-render-pulse-viewer"]],
+  "access": "public",
+  "baseBranch": "main",
+  "updateInternalDependencies": "patch",
+  "ignore": [
+    "react-render-pulse-bench",
+    "react-render-pulse-e2e",
+    "react-render-pulse-docs",
+    "example-vite-react",
+    "example-next-app-router",
+    "example-next-pages-router",
+    "example-react-router",
+    "example-collector-vercel"
+  ]
+}

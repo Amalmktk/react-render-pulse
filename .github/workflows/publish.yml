@@ -1,0 +1,45 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+
+concurrency: release-${{ github.ref }}
+
+permissions:
+  contents: write
+  pull-requests: write
+  # Lets npm exchange a short-lived GitHub OIDC token for a publish credential
+  # ("Trusted Publisher" on npmjs.com, set up per package). No NPM_TOKEN secret needed.
+  id-token: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: pnpm
+          registry-url: "https://registry.npmjs.org"
+
+      # Trusted publishing needs npm 11.5.1+. Pinned to the 11.x line (not
+      # `@latest`) so a future npm major can't silently raise the Node requirement.
+      - run: npm install -g npm@11
+
+      - run: pnpm install --frozen-lockfile
+
+      # With pending changesets, this opens (or updates) a "Version packages"
+      # pull request. Once that's merged, it publishes: `pnpm release` runs
+      # each package's prepublishOnly (typecheck + test + build) first.
+      - uses: changesets/action@v1
+        with:
+          version: pnpm version-packages
+          publish: pnpm release
+          title: "Version packages"
+          commit: "Version packages"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_CONFIG_PROVENANCE: "true"

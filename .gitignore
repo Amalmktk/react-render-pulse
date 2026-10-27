@@ -1,0 +1,21 @@
+node_modules
+dist
+coverage
+*.log
+.DS_Store
+
+# Framework and tool output
+.next
+.react-router
+build
+.vercel
+test-results
+playwright-report
+docs/.vitepress/cache
+docs/.vitepress/dist
+bench/results
+*.tsbuildinfo
+
+# Local collector output from the examples
+.render-pulse
+dist-profiling

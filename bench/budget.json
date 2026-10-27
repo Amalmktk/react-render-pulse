@@ -1,0 +1,5 @@
+{
+  "$comment": "Set in docs/decisions/001-modes.md from measured results (lightweight +7%, 0.011-0.012 ms per measured render; profiling +33-50%, 0.067-0.117 ms, the same as a bare <Profiler>). Limits leave headroom for CI-runner noise.",
+  "lightweight": { "maxAddedPercent": 15, "maxAddedMsPerMeasuredRender": 0.03 },
+  "profiling": { "maxAddedPercent": 75, "maxAddedMsPerMeasuredRender": 0.15 }
+}

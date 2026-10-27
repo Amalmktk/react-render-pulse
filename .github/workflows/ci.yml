@@ -1,0 +1,97 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Lint, types, tests, build, package checks
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20.x, 22.x]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      # Packages build first: the collector and viewer type-check against the client's built types.
+      - run: pnpm build
+      - run: pnpm typecheck
+      - run: pnpm test
+      # Coverage gate (85%) on aggregation, sampling, and transport.
+      - run: pnpm --filter react-render-pulse test:coverage
+      - run: pnpm size
+      - run: pnpm check:packages
+      - run: pnpm --filter "./examples/*" --if-present build
+      - run: pnpm docs:build
+
+  compat:
+    name: React ${{ matrix.react }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        react: ["18.3.1", "19.2.0", "latest"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter react-render-pulse add -D react@${{ matrix.react }} react-dom@${{ matrix.react }}
+      - run: pnpm --filter react-render-pulse test
+
+  browser:
+    name: Browser tests (Chromium, Firefox, WebKit)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: pnpm --filter react-render-pulse-e2e exec playwright install --with-deps chromium firefox webkit
+      - run: pnpm test:e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: e2e/playwright-report
+
+  overhead:
+    name: Overhead budget and accuracy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: pnpm --filter react-render-pulse-bench exec playwright install --with-deps chromium
+      # Fails the job when overhead exceeds bench/budget.json or the accuracy check fails.
+      - run: pnpm bench -- --check
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bench-results
+          path: bench/results/latest.json
