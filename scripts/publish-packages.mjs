@@ -66,4 +66,8 @@ try {
 if (!dryRun) {
   for (const id of published) run("git", ["tag", id]);
 }
-console.log(published.length > 0 ? `\n${dryRun ? "Would publish" : "Published"}: ${published.join(", ")}` : "\nNothing to publish.");
+console.log(
+  published.length > 0
+    ? `\n${dryRun ? "Would publish" : "Published"}: ${published.join(", ")}`
+    : "\nNothing to publish.",
+);
