@@ -234,11 +234,8 @@ Chromium, no CPU throttling, October 2026. The same runs check accuracy: compone
 
 ## Roadmap
 
-- [x] Project setup and research
-- [x] **v0.1** — `RenderMonitor`, `useRenderMonitor`, lightweight mode, aggregation, sampling
-- [x] **v0.5** — profiling mode, long tasks, delivery, example collector, CLI viewer
-- [x] **v1.0** — collector package, web viewer, OpenTelemetry export, React version matrix
-- [ ] **v2.0** — slow interaction attribution, release comparisons, CI regression checks, alerts
+- [x] **v1.0** — `RenderMonitor`, `useRenderMonitor`, lightweight and profiling modes, long tasks, delivery, collector package, CLI and web viewer, OpenTelemetry export, React version matrix
+- [ ] **v1.5** — slow interaction attribution, release comparisons, CI regression checks, alerts
 
 See the full roadmap in [ROADMAP.md](./ROADMAP.md).
 
