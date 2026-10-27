@@ -1,20 +1,17 @@
-name: Release
+name: Publish to npm
 
 on:
-  push:
-    branches: [main]
-
-concurrency: release-${{ github.ref }}
+  workflow_dispatch: {}
 
 permissions:
   contents: write
-  pull-requests: write
-  # Lets npm exchange a short-lived GitHub OIDC token for a publish credential
-  # ("Trusted Publisher" on npmjs.com, set up per package). No NPM_TOKEN secret needed.
+  # Lets this job request a short-lived GitHub OIDC token, which npm
+  # exchanges for a publish credential — see "Trusted Publisher" setup
+  # for each package on npmjs.com. No NPM_TOKEN secret needed.
   id-token: write
 
 jobs:
-  release:
+  publish:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -25,21 +22,21 @@ jobs:
           cache: pnpm
           registry-url: "https://registry.npmjs.org"
 
-      # Trusted publishing needs npm 11.5.1+. Pinned to the 11.x line (not
-      # `@latest`) so a future npm major can't silently raise the Node requirement.
+      # Trusted publishing needs npm 11.5.1+; the version bundled with this
+      # runner's Node is older. Pinned to the 11.x line (not `@latest`) so a
+      # future npm major bump doesn't silently raise the Node engine
+      # requirement again.
       - run: npm install -g npm@11
 
       - run: pnpm install --frozen-lockfile
 
-      # With pending changesets, this opens (or updates) a "Version packages"
-      # pull request. Once that's merged, it publishes: `pnpm release` runs
-      # each package's prepublishOnly (typecheck + test + build) first.
-      - uses: changesets/action@v1
-        with:
-          version: pnpm version-packages
-          publish: pnpm release
-          title: "Version packages"
-          commit: "Version packages"
+      # `changeset publish` publishes every package whose version isn't on npm
+      # yet, running each package's prepublishOnly (typecheck + test + build)
+      # first, so nothing goes out unverified. Provenance attaches a
+      # verifiable "built on GitHub Actions from this commit" attestation.
+      - run: pnpm release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_CONFIG_PROVENANCE: "true"
+
+      # Tags each published version (e.g. react-render-pulse@1.1.0).
+      - run: git push --follow-tags

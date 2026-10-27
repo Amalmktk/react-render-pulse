@@ -30,6 +30,16 @@ pnpm bench      # overhead and accuracy; fails if over bench/budget.json
 
 Add a changeset describing user-facing changes: `pnpm changeset`.
 
+## Releasing
+
+Releases use [Changesets](https://github.com/changesets/changesets):
+
+1. Each pull request with a user-facing change adds a changeset (`pnpm changeset`).
+2. On `main`, the **Version packages** workflow opens a pull request that bumps versions and writes the changelogs. Merge it when you're ready to release.
+3. Run the **Publish to npm** workflow (Actions → Publish to npm → Run workflow). It publishes every package whose version isn't on npm yet, with provenance, using npm trusted publishing (no token). Each package's `prepublishOnly` runs its type check, tests and build first.
+
+Trusted publishing is configured per package on npmjs.com (package → Settings → Trusted publisher → GitHub Actions, repository `Amalmktk/react-render-pulse`, workflow `publish.yml`). A package must exist on npm before it can have a trusted publisher, so the very first release was published locally with `npm login` and `pnpm release`.
+
 ## Ground rules
 
 - The client must never break the app: wrap anything that can throw in `guard`, and add a case to `packages/client/tests/safeFailure.test.tsx`.

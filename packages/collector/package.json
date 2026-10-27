@@ -1,6 +1,6 @@
 {
   "name": "react-render-pulse-collector",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "Collector endpoint for react-render-pulse: validates batches and stores them in Postgres or JSON files.",
   "keywords": [
     "react",

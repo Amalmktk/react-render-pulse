@@ -1,0 +1,35 @@
+name: Version packages
+
+on:
+  push:
+    branches: [main]
+
+concurrency: version-${{ github.ref }}
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  version:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # With pending changesets, opens (or updates) a "Version packages" pull
+      # request that bumps versions and writes the changelogs. Publishing is a
+      # separate, manual step: the "Publish to npm" workflow.
+      - uses: changesets/action@v1
+        with:
+          version: pnpm version-packages
+          title: "Version packages"
+          commit: "Version packages"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
