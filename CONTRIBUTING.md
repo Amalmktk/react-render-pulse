@@ -36,9 +36,9 @@ Releases use [Changesets](https://github.com/changesets/changesets):
 
 1. Each pull request with a user-facing change adds a changeset (`pnpm changeset`).
 2. On `main`, the **Version packages** workflow opens a pull request that bumps versions and writes the changelogs. Merge it when you're ready to release.
-3. Run the **Publish to npm** workflow (Actions → Publish to npm → Run workflow). It publishes every package whose version isn't on npm yet, with provenance, using npm trusted publishing (no token). Each package's `prepublishOnly` runs its type check, tests and build first.
+3. Run the **Publish to npm** workflow (Actions → Publish to npm → Run workflow). It builds, type-checks and tests everything, then publishes every package whose version isn't on npm yet (`scripts/publish-packages.mjs`), with provenance, and pushes a tag per published version. Re-running it is safe: versions already on npm are skipped.
 
-Trusted publishing is configured per package on npmjs.com (package → Settings → Trusted publisher → GitHub Actions, repository `Amalmktk/react-render-pulse`, workflow `publish.yml`). A package must exist on npm before it can have a trusted publisher, so the very first release was published locally with `npm login` and `pnpm release`.
+npm authenticates with trusted publishing, configured per package on npmjs.com (package → Settings → Trusted publisher → GitHub Actions, repository `Amalmktk/react-render-pulse`, workflow `publish.yml`). A package must exist on npm before it can have a trusted publisher, so a brand-new package's first publish uses an `NPM_TOKEN` repository secret instead; delete the secret once trusted publishing is set up. To check a release without publishing: `pnpm build && node scripts/publish-packages.mjs --dry-run`.
 
 ## Ground rules
 

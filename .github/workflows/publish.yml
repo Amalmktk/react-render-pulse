@@ -7,7 +7,7 @@ permissions:
   contents: write
   # Lets this job request a short-lived GitHub OIDC token, which npm
   # exchanges for a publish credential — see "Trusted Publisher" setup
-  # for each package on npmjs.com. No NPM_TOKEN secret needed.
+  # for each package on npmjs.com.
   id-token: write
 
 jobs:
@@ -30,13 +30,20 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      # `changeset publish` publishes every package whose version isn't on npm
-      # yet, running each package's prepublishOnly (typecheck + test + build)
-      # first, so nothing goes out unverified. Provenance attaches a
-      # verifiable "built on GitHub Actions from this commit" attestation.
-      - run: pnpm release
+      # Nothing goes out unverified.
+      - run: pnpm build
+      - run: pnpm typecheck
+      - run: pnpm test
+
+      # Publishes each package whose version isn't on npm yet, with
+      # provenance (a verifiable "built on GitHub Actions from this commit"
+      # attestation). npm authenticates with trusted publishing when the
+      # package has a trusted publisher. A brand-new package can't have one
+      # yet, so its first publish uses the NPM_TOKEN secret instead; once
+      # trusted publishing is set up, delete that secret.
+      - run: node scripts/publish-packages.mjs
         env:
           NPM_CONFIG_PROVENANCE: "true"
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      # Tags each published version (e.g. react-render-pulse@1.1.0).
-      - run: git push --follow-tags
+      - run: git push --tags
