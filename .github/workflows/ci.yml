@@ -16,7 +16,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [20.x, 22.x]
+        # Node 20 reached end of life in April 2026, and size-limit needs Node 22.19+.
+        node-version: [22.x, 24.x]
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4

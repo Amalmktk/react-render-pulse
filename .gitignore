@@ -1,5 +1,10 @@
 node_modules
 dist
+
+# Secrets: connection strings and tokens belong in Vercel / GitHub settings, never in git
+.env
+.env.*
+!.env.example
 coverage
 *.log
 .DS_Store

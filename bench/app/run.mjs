@@ -20,6 +20,8 @@ import { parseArgs } from "node:util";
 import { chromium } from "@playwright/test";
 
 const { values: args } = parseArgs({
+  // `pnpm bench -- --check` forwards the "--" on Linux and macOS (PowerShell drops it), so ignore it.
+  args: process.argv.slice(2).filter((arg) => arg !== "--"),
   options: {
     check: { type: "boolean", default: false },
     pages: { type: "string", default: "3" },
