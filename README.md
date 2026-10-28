@@ -12,7 +12,7 @@ Lightweight, privacy-friendly render performance monitoring for React in product
 [![CI](https://github.com/Amalmktk/react-render-pulse/actions/workflows/ci.yml/badge.svg)](https://github.com/Amalmktk/react-render-pulse/actions/workflows/ci.yml)
 [![TypeScript](https://img.shields.io/badge/TypeScript-ready-blue.svg)](https://www.typescriptlang.org/)
 
-[Getting started](#getting-started) · [How it works](#how-it-works) · [API](#api) · [What we collect](#what-we-collect) · [Roadmap](#roadmap)
+[Getting started](#getting-started) · [How it works](#how-it-works) · [API](#api) · [What we collect](#what-we-collect) · [Roadmap](#roadmap) · **[Docs](https://amalmktk.github.io/react-render-pulse/)**
 
 </div>
 
@@ -101,6 +101,8 @@ Leave out `endpoint` during development and every batch is logged to the console
  Sample → Measure → Aggregate → Deliver → Collect → View
 ```
 
+The [Architecture guide](https://amalmktk.github.io/react-render-pulse/guide/architecture) covers each step in detail.
+
 1. **Sample** — once per session, decide whether to monitor it. Unsampled sessions do almost nothing.
 2. **Measure** — record render durations and counts for each monitored area, and observe long tasks and long animation frames on the main thread.
 3. **Aggregate** — keep compact summaries in memory (counts, histograms, percentiles, worst cases), never raw event streams.
@@ -118,7 +120,7 @@ Leave out `endpoint` during development and every batch is logged to the console
 | Overhead        | Higher (it's React's profiling build's own cost)   | Very low (~10 µs per measured render)           |
 | Best for        | A small sampled group or staging                   | All production users                            |
 
-With `mode: "auto"` (the default), react-render-pulse uses profiling mode when React's profiling build is detected, and lightweight mode otherwise. See the [modes guide](./docs/guide/modes.md) for setup steps for Vite and Next.js.
+With `mode: "auto"` (the default), react-render-pulse uses profiling mode when React's profiling build is detected, and lightweight mode otherwise. See the [modes guide](https://amalmktk.github.io/react-render-pulse/guide/modes) for setup steps for Vite and Next.js.
 
 ## API
 
@@ -137,7 +139,7 @@ With `mode: "auto"` (the default), react-render-pulse uses profiling mode when R
 | `exporters`       | `Exporter[]`                             | —                          | Receive measurements and batches, e.g. `createOtelExporter`      |
 | `debug`           | `boolean`                                | `true` without `endpoint`  | Log batches and internal errors to the console                   |
 
-`initRenderPulse` returns `{ sampled, mode, flush(), destroy() }`. More options (payload size and area limits) are in the [API reference](./docs/api/client.md).
+`initRenderPulse` returns `{ sampled, mode, flush(), destroy() }`. More options (payload size and area limits) are in the [API reference](https://amalmktk.github.io/react-render-pulse/api/client).
 
 ### `<RenderMonitor id="..." />`
 
@@ -154,7 +156,7 @@ Measures a single component's renders. Render counts are exact; durations run fr
 
 ### `createOtelExporter({ meter })`
 
-From `react-render-pulse/otel`. Records every measurement as OpenTelemetry metrics. See the [OpenTelemetry guide](./docs/guide/opentelemetry.md).
+From `react-render-pulse/otel`. Records every measurement as OpenTelemetry metrics. See the [OpenTelemetry guide](https://amalmktk.github.io/react-render-pulse/guide/opentelemetry).
 
 ## What we collect
 
@@ -173,7 +175,7 @@ react-render-pulse is designed to collect **performance data only**. A batch loo
 }
 ```
 
-The session `id` is random per page load and never stored on the device, so it can't identify a user. Every field is listed in [What we collect](./docs/guide/what-we-collect.md).
+The session `id` is random per page load and never stored on the device, so it can't identify a user. Every field is listed in [What we collect](https://amalmktk.github.io/react-render-pulse/guide/what-we-collect).
 
 **Never collected:** user IDs, IP addresses (by the client), cookies, page text, input values, or URLs' query strings. The collector rejects payloads with any field it doesn't expect.
 
@@ -201,13 +203,15 @@ npx react-render-pulse-viewer report batches.jsonl     # terminal report
 npx react-render-pulse-viewer serve --db "$DATABASE_URL"   # web viewer
 ```
 
-The collector also stores to a JSON Lines file (`react-render-pulse-collector/json-file`) and runs on Express or plain Node (`react-render-pulse-collector/node`). See the [collector guide](./docs/guide/collector.md) and the [viewer guide](./docs/guide/viewer.md).
+The collector also stores to a JSON Lines file (`react-render-pulse-collector/json-file`) and runs on Express or plain Node (`react-render-pulse-collector/node`). Postgres keeps each batch as `jsonb`, so you can also query it with SQL.
+
+**[Collecting results](https://amalmktk.github.io/react-render-pulse/guide/collecting-results)** walks through it end to end: choosing where data goes, deploying a collector, checking data arrives, reading it with the viewer, ready-made SQL queries, and troubleshooting. See also the [collector guide](https://amalmktk.github.io/react-render-pulse/guide/collector) and the [viewer guide](https://amalmktk.github.io/react-render-pulse/guide/viewer).
 
 ## Framework guides
 
-- [Vite + React](./docs/guide/frameworks.md#vite)
-- [Next.js App Router](./docs/guide/frameworks.md#nextjs-app-router) and [Pages Router](./docs/guide/frameworks.md#nextjs-pages-router)
-- [React Router](./docs/guide/frameworks.md#react-router)
+- [Vite + React](https://amalmktk.github.io/react-render-pulse/guide/frameworks#vite)
+- [Next.js App Router](https://amalmktk.github.io/react-render-pulse/guide/frameworks#next-js-app-router) and [Pages Router](https://amalmktk.github.io/react-render-pulse/guide/frameworks#next-js-pages-router)
+- [React Router](https://amalmktk.github.io/react-render-pulse/guide/frameworks#react-router)
 
 Each has a working app in [`examples/`](./examples).
 
@@ -220,7 +224,7 @@ A performance tool shouldn't hurt performance. Overhead is measured on every pul
 | Lightweight | ~0.006–0.014 ms per measured render (+4–11% in a render-only benchmark)    | 3.6 kB                     |
 | Profiling   | ~0.07–0.08 ms per measured render — about the same as a bare React `<Profiler>` | 3.6 kB (+ React's profiling build) |
 
-Chromium, no CPU throttling, October 2026. The same runs check accuracy: components with a known cost of 2, 8 and 20 ms are reported as 2, 8 and 20 ms in both modes. See [Performance](./docs/guide/performance.md) for how these numbers are measured and how to reproduce them, and [decision 001](./docs/decisions/001-modes.md) for how the budget was set.
+Chromium, no CPU throttling, October 2026. The same runs check accuracy: components with a known cost of 2, 8 and 20 ms are reported as 2, 8 and 20 ms in both modes. See [Performance](https://amalmktk.github.io/react-render-pulse/guide/performance) for how these numbers are measured and how to reproduce them, and [decision 001](https://amalmktk.github.io/react-render-pulse/decisions/001-modes) for how the budget was set.
 
 ## Comparison
 

@@ -5,6 +5,10 @@ const repo = "https://github.com/Amalmktk/react-render-pulse";
 export default defineConfig({
   title: "react-render-pulse",
   description: "Real-user render performance monitoring for React, at the component level.",
+  // Served from GitHub Pages at https://amalmktk.github.io/react-render-pulse/.
+  base: "/react-render-pulse/",
+  // docs/README.md is the index for browsing the folder on GitHub, not a site page.
+  srcExclude: ["README.md"],
   cleanUrls: true,
   lastUpdated: false,
   themeConfig: {
@@ -18,6 +22,8 @@ export default defineConfig({
         text: "Guide",
         items: [
           { text: "Getting started", link: "/guide/getting-started" },
+          { text: "Architecture", link: "/guide/architecture" },
+          { text: "Collecting results", link: "/guide/collecting-results" },
           { text: "Modes", link: "/guide/modes" },
           { text: "Choosing areas", link: "/guide/choosing-areas" },
           { text: "What we collect", link: "/guide/what-we-collect" },
