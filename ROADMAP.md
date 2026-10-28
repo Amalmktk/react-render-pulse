@@ -1,5 +1,7 @@
 # Roadmap
 
+What's built, and what's planned next. Plans can change, and there are no dates. Ideas and feedback are welcome in [issues](https://github.com/Amalmktk/react-render-pulse/issues).
+
 ## v1.0 — current
 
 - [x] `<RenderMonitor>` and `useRenderMonitor`; nested areas

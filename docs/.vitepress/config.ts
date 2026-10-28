@@ -16,6 +16,7 @@ export default defineConfig({
       { text: "Guide", link: "/guide/getting-started", activeMatch: "/guide/" },
       { text: "API", link: "/api/client", activeMatch: "/api/" },
       { text: "Performance", link: "/guide/performance" },
+      { text: "Roadmap", link: `${repo}/blob/main/ROADMAP.md` },
     ],
     sidebar: [
       {

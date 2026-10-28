@@ -309,6 +309,17 @@ The client is 3.6 kB brotli (`initRenderPulse` + `RenderMonitor` + `useRenderMon
 - Long tasks are observed only where the browser supports them: Chromium for long tasks and long animation frames. Other browsers still report render timings.
 - Profiling mode needs React's profiling build, which is slower than the regular build. Ship it to a sample, not everyone.
 
+## What's next
+
+Planned for v1.5 (no dates; plans can change):
+
+- Slow interactions (INP) attributed to the component areas that caused them
+- Release comparisons: which areas got faster or slower between two app versions
+- Render budgets checked in pull requests, with a GitHub Action
+- Regression alerts by webhook, and adaptive sampling (more data from slow devices)
+
+Full list: [ROADMAP.md](https://github.com/Amalmktk/react-render-pulse/blob/main/ROADMAP.md). Ideas and feedback are welcome in [issues](https://github.com/Amalmktk/react-render-pulse/issues).
+
 ## Related packages
 
 - [`react-render-pulse-collector`](https://www.npmjs.com/package/react-render-pulse-collector): validates and stores batches (Postgres, JSON file, custom)
