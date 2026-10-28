@@ -1,5 +1,14 @@
 # react-render-pulse-viewer
 
+## 1.0.1
+
+### Patch Changes
+
+- c490b0e: Complete READMEs on npm: how it works, every option, collecting and querying results (including SQL), framework setup, deployment targets, and links to the documentation site at https://amalmktk.github.io/react-render-pulse/. No code changes.
+- Updated dependencies [c490b0e]
+  - react-render-pulse@1.0.1
+  - react-render-pulse-collector@1.0.1
+
 ## 1.0.0
 
 ### Major Changes
