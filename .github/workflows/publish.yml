@@ -44,5 +44,8 @@ jobs:
       - run: node scripts/publish-packages.mjs
         env:
           NPM_CONFIG_PROVENANCE: "true"
+          # npm only explains a failed trusted-publishing exchange at verbose
+          # level ("oidc Failed token exchange request with body message: ...").
+          NPM_CONFIG_LOGLEVEL: verbose
 
       - run: git push --tags
