@@ -14,7 +14,7 @@
 - [x] OpenTelemetry metrics export
 - [x] Examples: Vite, Next.js App Router and Pages Router, React Router, a Vercel collector
 - [x] React version matrix in CI; overhead measured, budgeted and published per mode
-- [ ] Publish 1.0.0 to npm
+- [x] Publish 1.0.0 to npm
 - [ ] Run on a real site and publish findings
 
 ## v1.5 — next
