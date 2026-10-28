@@ -3,6 +3,8 @@ name: Version packages
 on:
   push:
     branches: [main]
+  # Lets you run it from Actions → Version packages → Run workflow.
+  workflow_dispatch: {}
 
 concurrency: version-${{ github.ref }}
 
