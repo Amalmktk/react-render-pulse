@@ -37,13 +37,12 @@ jobs:
 
       # Publishes each package whose version isn't on npm yet, with
       # provenance (a verifiable "built on GitHub Actions from this commit"
-      # attestation). npm authenticates with trusted publishing when the
-      # package has a trusted publisher. A brand-new package can't have one
-      # yet, so its first publish uses the NPM_TOKEN secret instead; once
-      # trusted publishing is set up, delete that secret.
+      # attestation). npm authenticates with trusted publishing only (each
+      # package's Trusted Publisher on npmjs.com: Amalmktk/react-render-pulse,
+      # publish.yml). No token is passed: when one is, npm publishes with it
+      # instead, and a token without 2FA bypass gets a 404.
       - run: node scripts/publish-packages.mjs
         env:
           NPM_CONFIG_PROVENANCE: "true"
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - run: git push --tags
