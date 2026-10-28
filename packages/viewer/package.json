@@ -1,6 +1,6 @@
 {
   "name": "react-render-pulse-viewer",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "CLI and web viewer for react-render-pulse data: slowest components, worst devices, and trends.",
   "keywords": [
     "react",
