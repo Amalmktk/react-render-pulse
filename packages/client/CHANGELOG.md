@@ -1,5 +1,11 @@
 # react-render-pulse
 
+## 1.0.2
+
+### Patch Changes
+
+- 545bed2: README: a "What's next" section with the features planned for v1.5.
+
 ## 1.0.1
 
 ### Patch Changes
