@@ -14,7 +14,10 @@ afterEach(() => {
 
 describe("privacy", () => {
   it("never includes page text, input values, query strings, or identifiers", async () => {
-    window.history.replaceState(null, "", "/users/12345/profile?email=jane%40example.com#token=abc");
+    // Secrets must be strings that can't appear by chance: the payload has a
+    // random hex session id and numeric timestamps, so "abc" or "12345" would
+    // sometimes show up in them and make this test flaky.
+    window.history.replaceState(null, "", "/users/48151623/profile?email=jane%40example.com#token=PRIVATE-TOKEN-xyz");
     pulse = initRenderPulse({ debug: false, flushIntervalMs: 0 });
 
     render(
@@ -30,9 +33,21 @@ describe("privacy", () => {
 
     const json = JSON.stringify(pulse.flush());
 
-    for (const secret of ["Jane", "secret-password", "jane", "example.com", "12345", "token", "abc"]) {
+    for (const secret of [
+      "Jane",
+      "secret-password",
+      "jane",
+      "example.com",
+      "email=",
+      "PRIVATE-TOKEN",
+      "token=",
+      "/users/48151623",
+    ]) {
       expect(json).not.toContain(secret);
     }
-    expect(JSON.parse(json).session.route).toBe("/users/:id/profile");
+    // The numeric user id is replaced in every route the payload carries.
+    const payload = JSON.parse(json);
+    expect(payload.session.route).toBe("/users/:id/profile");
+    expect(payload.areas.map((a: { route: string }) => a.route)).toEqual(["/users/:id/profile"]);
   });
 });
