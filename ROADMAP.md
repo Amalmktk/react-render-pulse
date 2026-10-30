@@ -22,6 +22,7 @@ What's built, and what's planned next. Plans can change, and there are no dates.
 ## v1.5 — next
 
 - [ ] Slow interactions (INP) attributed to component areas
+- [ ] Separate timings for first renders and updates (a histogram per phase in each area), so mount cost doesn't hide slow updates
 - [ ] Release comparisons with confidence based on sample sizes
 - [ ] Custom dimensions (feature flags, A/B variants)
 - [ ] Adaptive sampling (more data from slow devices and rare routes)

@@ -314,6 +314,7 @@ The client is 3.6 kB brotli (`initRenderPulse` + `RenderMonitor` + `useRenderMon
 Planned for v1.5 (no dates; plans can change):
 
 - Slow interactions (INP) attributed to the component areas that caused them
+- Separate timings for first renders and updates in each area
 - Release comparisons: which areas got faster or slower between two app versions
 - Render budgets checked in pull requests, with a GitHub Action
 - Regression alerts by webhook, and adaptive sampling (more data from slow devices)
