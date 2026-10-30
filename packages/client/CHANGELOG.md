@@ -1,5 +1,11 @@
 # react-render-pulse
 
+## 1.0.3
+
+### Patch Changes
+
+- 88a71d8: README: "What's next" lists separate first-render and update timings, planned for v1.5.
+
 ## 1.0.2
 
 ### Patch Changes
