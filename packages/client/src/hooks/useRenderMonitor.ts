@@ -12,6 +12,9 @@ import { useIsomorphicLayoutEffect } from "../runtime/useIsomorphicLayoutEffect.
  * commit, so it also includes anything React renders after this component
  * in the same update: an upper bound. Wrap the component in `<RenderMonitor>`
  * when you need its own render time.
+ *
+ * Don't use it in a component that renders before the rest of the page, such
+ * as a header or layout: on the first render its duration covers the whole page.
  */
 export function useRenderMonitor(id: string): void {
   const state = useRef({ start: 0, recordedStart: -1, mounted: false }).current;

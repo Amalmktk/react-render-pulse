@@ -75,6 +75,8 @@ function useRenderMonitor(id: string): void;
 
 Tracks the renders of the component that calls it, reported under `id`. Render counts are exact. The duration runs from the hook's call to the commit, so it also includes anything React renders after this component in the same update: an upper bound. Wrap the component in `<RenderMonitor>` when you need its own render time. Uses timing marks in every mode, so its measurements are labeled `mode: "lightweight"` even in a profiling session.
 
+Don't use it in a header or layout that renders before the rest of the page: on the first render its duration covers the whole page. See [Modes](/guide/modes#the-hook-s-duration-is-an-upper-bound).
+
 ## `createConsoleExporter()`
 
 ```ts

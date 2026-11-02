@@ -104,6 +104,21 @@ In concurrent renders that yield to the browser (transitions, `useDeferredValue`
 
 When you need a component's own render time, wrap it in `<RenderMonitor>` instead.
 
+::: warning Don't use the hook in a component that renders first
+A header, navigation bar or layout renders before the rest of the page. On the first render, the hook's duration then covers the **whole page's** render, and long frames during page load are attributed to that component. Put `<RenderMonitor>` inside the component instead, around what it returns. Placed below the component's state, it still measures the component's own updates:
+
+```tsx
+function Header() {
+  const [menuOpen, setMenuOpen] = useState(false);
+  return (
+    <RenderMonitor id="header">
+      <header>{/* ... */}</header>
+    </RenderMonitor>
+  );
+}
+```
+:::
+
 ## Safety
 
 In every mode, errors inside react-render-pulse, in exporters, and in `getRoute` are caught and never reach your app. With `debug` on, they're logged as console warnings. Monitors keep rendering their children if `initRenderPulse` is never called, is called late, or after `destroy()`.

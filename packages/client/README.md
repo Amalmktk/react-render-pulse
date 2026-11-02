@@ -173,6 +173,8 @@ Measures the renders of its children as one area named `id`. Areas with the same
 
 Measures the component that calls it. Render counts are exact. The duration runs from the hook to the commit, so it's an upper bound that can include components rendered after it in the same update.
 
+Don't use it in a component that renders before the rest of the page, such as a header or layout: on the first render its duration covers the whole page, and long frames during page load are blamed on it. Put `<RenderMonitor>` inside the component instead, around what it returns; below the component's state, it still measures the component's own updates.
+
 ### Exporters
 
 An exporter receives data as it's measured:
@@ -305,7 +307,7 @@ The client is 3.6 kB brotli (`initRenderPulse` + `RenderMonitor` + `useRenderMon
 ## Limitations
 
 - Lightweight mode doesn't see updates that start below an area, such as a child's own state change. Monitor the component that owns the state, or use profiling mode for those sessions.
-- `useRenderMonitor` durations are an upper bound. Use `<RenderMonitor>` around the component for its own render time.
+- `useRenderMonitor` durations are an upper bound. Use `<RenderMonitor>` around the component for its own render time, and never use the hook in a header or layout that renders before the rest of the page.
 - Long tasks are observed only where the browser supports them: Chromium for long tasks and long animation frames. Other browsers still report render timings.
 - Profiling mode needs React's profiling build, which is slower than the regular build. Ship it to a sample, not everyone.
 
