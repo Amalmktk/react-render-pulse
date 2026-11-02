@@ -1,5 +1,12 @@
 # react-render-pulse
 
+## 1.0.3
+
+### Patch Changes
+
+- 2af40c7: Docs: warn against `useRenderMonitor` in a header or layout that renders before the rest of the page, where its first-render duration covers the whole page. Use `<RenderMonitor>` inside the component instead.
+- 88a71d8: README: "What's next" lists separate first-render and update timings, planned for v1.5.
+
 ## 1.0.2
 
 ### Patch Changes
