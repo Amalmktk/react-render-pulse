@@ -79,6 +79,24 @@ export interface WorstCase {
   at: number;
 }
 
+/**
+ * Timings for one phase of an area: first renders (`mount`) or every later render (`update`,
+ * which includes React's `nested-update`). Same fields as the area itself, for that phase only.
+ */
+export interface PhaseTimings {
+  renders: number;
+  /** Renders slower than `slowRenderMs`. */
+  slow: number;
+  totalMs: number;
+  min: number;
+  max: number;
+  p50: number;
+  p75: number;
+  p95: number;
+  /** Render counts per `HISTOGRAM_BOUNDS` bucket, plus a final overflow bucket. */
+  hist: number[];
+}
+
 /** Render timings for one area on one route, for one batch. Durations are in milliseconds. */
 export interface AreaReport {
   id: string;
@@ -96,6 +114,11 @@ export interface AreaReport {
   p95: number;
   /** Render counts per `HISTOGRAM_BOUNDS` bucket, plus a final overflow bucket. Histograms from many batches can be added together. */
   hist: number[];
+  /**
+   * The same timings split by phase, so a slow first render doesn't hide slow updates (or the other way
+   * round). A phase with no renders in the batch is left out. The fields above cover both phases together.
+   */
+  phases?: { mount?: PhaseTimings | undefined; update?: PhaseTimings | undefined } | undefined;
   worst: WorstCase[];
 }
 

@@ -18,6 +18,19 @@ const longTaskReport = z.strictObject({
   maxMs: ms,
 });
 
+// Timings for one phase of an area (first renders, or updates), same shape as the area's own
+const phaseTimings = z.strictObject({
+  renders: count,
+  slow: count,
+  totalMs: z.number().finite().min(0),
+  min: ms,
+  max: ms,
+  p50: ms,
+  p75: ms,
+  p95: ms,
+  hist: z.array(count).length(HISTOGRAM_BOUNDS.length + 1),
+});
+
 export const payloadV1Schema = z.strictObject({
   v: z.literal(1),
   session: z.strictObject({
@@ -58,6 +71,8 @@ export const payloadV1Schema = z.strictObject({
         p75: ms,
         p95: ms,
         hist: z.array(count).length(HISTOGRAM_BOUNDS.length + 1),
+        // Optional: clients before 1.1 don't send it
+        phases: z.strictObject({ mount: phaseTimings.optional(), update: phaseTimings.optional() }).optional(),
         worst: z.array(z.strictObject({ ms, phase, at: z.number().finite().min(0) })).max(50),
       }),
     )

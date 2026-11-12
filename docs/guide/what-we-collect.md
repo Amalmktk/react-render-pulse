@@ -130,9 +130,24 @@ One entry per area id and route.
 | `max`               | number   | Slowest render.                                                                                                                                                                  |
 | `p50`, `p75`, `p95` | number   | Percentiles, estimated from the histogram and kept within the observed `min` and `max`.                                                                                          |
 | `hist`              | number[] | Render counts per bucket of `HISTOGRAM_BOUNDS`, plus a final overflow bucket (16 numbers).                                                                                       |
+| `phases`            | object   | Optional. The same timings split into `mount` (first renders) and `update` (every later render, including React's nested updates). See [`phases`](#phases) below.                |
 | `worst`             | array    | The slowest renders in this batch (up to `worstCases`, default 5): `ms`, `phase` (`"mount"`, `"update"` or `"nested-update"`), and `at`, milliseconds since the session started. |
 
 `HISTOGRAM_BOUNDS` is `[1, 2, 4, 8, 12, 16, 24, 33, 50, 75, 100, 150, 250, 500, 1000]`: each bucket counts renders up to and including its bound. Histograms from many batches can be added bucket by bucket, which is how the viewer computes percentiles across sessions.
+
+#### `phases`
+
+A first render usually costs far more than an update, so mixing them hides slow updates behind one slow mount, or the other way round. `phases` keeps them apart. It has up to two keys, `mount` and `update`; a key is left out when the area had no renders of that phase in the batch.
+
+| Field                                | Type     | Description                                                              |
+| ------------------------------------ | -------- | ------------------------------------------------------------------------ |
+| `renders`                            | number   | Measured renders in this phase.                                          |
+| `slow`                               | number   | Of those, renders slower than `slowRenderMs`.                            |
+| `totalMs`, `min`, `max`              | number   | Sum, fastest and slowest render in this phase.                           |
+| `p50`, `p75`, `p95`                  | number   | Percentiles for this phase, estimated from its histogram.                |
+| `hist`                               | number[] | Same 16 buckets as the area's `hist`, counting only this phase.          |
+
+The area's own fields still cover both phases together, so `hist` is the sum of the two phase histograms, and everything that reads the older fields keeps working. Added in 1.1; the collector must be 1.1 or later to accept it (see [Upgrading](/guide/collector#upgrading-to-1-1)).
 
 ### `longTasks[]` and `longFrames[]`
 

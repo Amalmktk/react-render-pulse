@@ -1,5 +1,13 @@
 import { bucketIndex, createHistogram, histogramPercentile, round } from "./histogram.js";
-import type { AreaReport, LongTaskEvent, LongTaskReport, RenderEvent, SessionSummary, WorstCase } from "../types.js";
+import type {
+  AreaReport,
+  LongTaskEvent,
+  LongTaskReport,
+  PhaseTimings,
+  RenderEvent,
+  SessionSummary,
+  WorstCase,
+} from "../types.js";
 
 export interface AggregatorOptions {
   /** Renders slower than this count as slow. */
@@ -29,17 +37,38 @@ export interface Aggregator {
   drain: () => AggregatedBatch;
 }
 
-interface AreaAccumulator {
-  id: string;
-  route: string;
+/** Timings for a set of renders: one area, or one phase of an area. */
+interface TimingsAccumulator {
   renders: number;
-  mounts: number;
   slow: number;
   totalMs: number;
   min: number;
   max: number;
   hist: number[];
+}
+
+interface AreaAccumulator extends TimingsAccumulator {
+  id: string;
+  route: string;
+  mounts: number;
+  /** First renders and later renders (updates, including nested updates) kept apart. */
+  mount: TimingsAccumulator;
+  update: TimingsAccumulator;
   worst: WorstCase[];
+}
+
+function timingsAccumulator(): TimingsAccumulator {
+  return { renders: 0, slow: 0, totalMs: 0, min: Infinity, max: 0, hist: createHistogram() };
+}
+
+function addTiming(acc: TimingsAccumulator, ms: number, slowRenderMs: number): void {
+  acc.renders++;
+  if (ms > slowRenderMs) acc.slow++;
+  acc.totalMs += ms;
+  acc.min = Math.min(acc.min, ms);
+  acc.max = Math.max(acc.max, ms);
+  const bucket = bucketIndex(ms);
+  acc.hist[bucket] = (acc.hist[bucket] ?? 0) + 1;
 }
 
 interface LongTaskAccumulator {
@@ -68,29 +97,21 @@ export function createAggregator(options: AggregatorOptions): Aggregator {
         return;
       }
       area = {
+        ...timingsAccumulator(),
         id: event.area,
         route: event.route,
-        renders: 0,
         mounts: 0,
-        slow: 0,
-        totalMs: 0,
-        min: Infinity,
-        max: 0,
-        hist: createHistogram(),
+        mount: timingsAccumulator(),
+        update: timingsAccumulator(),
         worst: [],
       };
       areas.set(key, area);
     }
 
     const ms = event.duration;
-    area.renders++;
     if (event.phase === "mount") area.mounts++;
-    if (ms > options.slowRenderMs) area.slow++;
-    area.totalMs += ms;
-    area.min = Math.min(area.min, ms);
-    area.max = Math.max(area.max, ms);
-    const bucket = bucketIndex(ms);
-    area.hist[bucket] = (area.hist[bucket] ?? 0) + 1;
+    addTiming(area, ms, options.slowRenderMs);
+    addTiming(event.phase === "mount" ? area.mount : area.update, ms, options.slowRenderMs);
     addWorstCase(area.worst, { ms, phase: event.phase, at: event.startTime - options.sessionStart });
   }
 
@@ -154,20 +175,31 @@ export function createAggregator(options: AggregatorOptions): Aggregator {
   };
 }
 
+function toPhaseTimings(acc: TimingsAccumulator): PhaseTimings {
+  return {
+    renders: acc.renders,
+    slow: acc.slow,
+    totalMs: round(acc.totalMs),
+    min: round(acc.min),
+    max: round(acc.max),
+    p50: histogramPercentile(acc.hist, 50, acc.max, acc.min),
+    p75: histogramPercentile(acc.hist, 75, acc.max, acc.min),
+    p95: histogramPercentile(acc.hist, 95, acc.max, acc.min),
+    hist: acc.hist,
+  };
+}
+
 function toAreaReport(area: AreaAccumulator): AreaReport {
   return {
     id: area.id,
     route: area.route,
-    renders: area.renders,
     mounts: area.mounts,
-    slow: area.slow,
-    totalMs: round(area.totalMs),
-    min: round(area.min),
-    max: round(area.max),
-    p50: histogramPercentile(area.hist, 50, area.max, area.min),
-    p75: histogramPercentile(area.hist, 75, area.max, area.min),
-    p95: histogramPercentile(area.hist, 95, area.max, area.min),
-    hist: area.hist,
+    ...toPhaseTimings(area),
+    // A phase with no renders in this batch is left out
+    phases: {
+      ...(area.mount.renders > 0 && { mount: toPhaseTimings(area.mount) }),
+      ...(area.update.renders > 0 && { update: toPhaseTimings(area.update) }),
+    },
     worst: area.worst
       .sort((a, b) => b.ms - a.ms)
       .map((w) => ({ ms: round(w.ms), phase: w.phase, at: Math.round(w.at) })),

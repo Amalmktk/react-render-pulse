@@ -26,6 +26,18 @@ const areaColumns: Column<AreaSummary>[] = [
   { header: "long tasks", value: (a) => a.longTasks },
 ];
 
+const phaseColumns: Column<AreaSummary>[] = [
+  { header: "area", value: (a) => a.id },
+  { header: "route", value: (a) => a.route },
+  { header: "first renders", value: (a) => a.mount?.renders ?? "-" },
+  { header: "first p75 ms", value: (a) => a.mount?.p75 ?? "-" },
+  { header: "first max ms", value: (a) => a.mount?.max ?? "-" },
+  { header: "updates", value: (a) => a.update?.renders ?? "-" },
+  { header: "update p75 ms", value: (a) => a.update?.p75 ?? "-" },
+  { header: "update p95 ms", value: (a) => a.update?.p95 ?? "-" },
+  { header: "update max ms", value: (a) => a.update?.max ?? "-" },
+];
+
 /** The terminal version of the report: headline numbers, then the slowest areas, routes, and devices. */
 export function formatReport(report: Report, limit = 15): string {
   if (report.batches === 0) return "No batches found for this filter.";
@@ -40,6 +52,11 @@ export function formatReport(report: Report, limit = 15): string {
     section("Devices (memory · cores)", renderTable(report.devices.slice(0, limit), groupColumns("device"))),
     section("Connections", renderTable(report.connections.slice(0, limit), groupColumns("connection"))),
   ];
+  // Only when some client sent the split; older data has nothing to show here
+  const split = report.areas.filter((a) => a.mount || a.update);
+  if (split.length > 0) {
+    sections.splice(3, 0, section("First renders vs updates", renderTable(split.slice(0, limit), phaseColumns)));
+  }
   if (report.byVersion.length > 1) {
     // Most recent versions last, as they first appeared.
     sections.push(section("App versions", renderTable(report.byVersion.slice(-limit), groupColumns("version"))));

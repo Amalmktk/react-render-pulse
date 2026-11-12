@@ -49,6 +49,7 @@ npx react-render-pulse-viewer report --db "$DATABASE_URL" --since 7d
 The report starts with the date range and headline numbers: sessions, renders, the share of slow renders, the overall p75 render time, and long tasks per session. Then come these tables:
 
 - **Slowest areas (by p75)**: one row per area and route, with renders, slow %, p50/p75/p95, max, and long tasks attributed to the area.
+- **First renders vs updates**: the same areas with first renders and later renders counted apart (renders, p75 and max for first renders; renders, p75, p95 and max for updates). It appears only when the data has the split, which clients from 1.1 send. Use it when an area's overall p75 looks fine but its tail doesn't: a slow first render and slow updates need different fixes.
 - **Routes**: the same timings per route across all areas, and long tasks per session on that route.
 - **Devices (memory · cores)**: device classes such as `4 GB · 8 cores`. Unknown values show as `?`.
 - **Connections**: by `effectiveType` (`4g`, `3g`, ...), or `unknown`.
