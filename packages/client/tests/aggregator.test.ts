@@ -36,6 +36,36 @@ describe("createAggregator", () => {
     expect(summary).toMatchObject({ renders: 3, slowRenders: 1 });
   });
 
+  it("splits timings by phase, so a slow mount doesn't hide fast updates", () => {
+    const agg = aggregator();
+    agg.addRender(renderEvent({ phase: "mount", duration: 40 }));
+    for (const duration of [1, 2, 3]) agg.addRender(renderEvent({ phase: "update", duration }));
+    agg.addRender(renderEvent({ phase: "nested-update", duration: 20 }));
+
+    const [area] = agg.drain().areas;
+
+    expect(area?.phases?.mount).toMatchObject({ renders: 1, slow: 1, min: 40, max: 40, totalMs: 40 });
+    // nested updates count as updates
+    expect(area?.phases?.update).toMatchObject({ renders: 4, slow: 1, min: 1, max: 20, totalMs: 26 });
+    expect(area?.phases?.update?.p50).toBeLessThan(area?.phases?.mount?.p50 ?? 0);
+    // the area-level fields still cover both phases
+    expect(area).toMatchObject({ renders: 5, mounts: 1, slow: 2, max: 40, totalMs: 66 });
+    const merged = area?.hist.map(
+      (n, i) => n - (area.phases?.mount?.hist[i] ?? 0) - (area.phases?.update?.hist[i] ?? 0),
+    );
+    expect(merged?.every((n) => n === 0)).toBe(true);
+  });
+
+  it("leaves out a phase that had no renders in the batch", () => {
+    const agg = aggregator();
+    agg.addRender(renderEvent({ phase: "update", duration: 3 }));
+
+    const [area] = agg.drain().areas;
+
+    expect(area?.phases).toEqual({ update: expect.objectContaining({ renders: 1 }) });
+    expect(area?.phases?.mount).toBeUndefined();
+  });
+
   it("reports percentiles in order", () => {
     const agg = aggregator();
     for (let i = 1; i <= 100; i++) agg.addRender(renderEvent({ duration: i }));

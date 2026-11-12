@@ -291,6 +291,15 @@ The handler runs on any Node 18+ runtime. Deno and Bun can pass it directly to `
 
 When a request has neither `x-forwarded-for` nor `x-real-ip`, `toNodeListener` passes the socket's remote address on as `x-real-ip`, so a Node server facing clients directly is still rate limited per client. Behind a reverse proxy, the proxy's `x-forwarded-for` is used instead.
 
+## Upgrading to 1.1
+
+Version 1.1 of the client adds an optional `phases` field to every area, with timings for first renders and updates apart (see [What we collect](/guide/what-we-collect#phases)). The collector rejects fields it doesn't know, so **upgrade the collector before the client**:
+
+1. Update `react-render-pulse-collector` to 1.1 and deploy it. It accepts payloads with and without `phases`, so clients on 1.0 keep working.
+2. Then update `react-render-pulse` in your app.
+
+A 1.1 client talking to a 1.0 collector gets a 400 on every batch, and nothing is stored until the collector is updated. Data already stored needs no migration: the Postgres adapter keeps each batch as `jsonb`, and older batches simply have no `phases`.
+
 ## Rate limits
 
 By default each client may send 120 requests a minute. Batches go out roughly every 3 minutes and when the page is hidden, so real clients stay far below that.

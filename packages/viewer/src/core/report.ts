@@ -18,6 +18,12 @@ export interface AreaSummary extends Timings {
   route: string;
   sessions: number;
   mounts: number;
+  /**
+   * The same timings for first renders only, and for later renders (updates) only. Left out when no
+   * batch had a split (clients before 1.1 don't send one).
+   */
+  mount?: Timings;
+  update?: Timings;
   longTasks: number;
   longTaskMaxMs: number;
 }
@@ -89,6 +95,18 @@ function addArea(acc: Accumulator, area: Payload["areas"][number], sessionId: st
   acc.sessions.add(sessionId);
 }
 
+/** Adds one phase's timings; sessions and mounts belong to the area as a whole, so they aren't touched. */
+function addPhase(
+  acc: Accumulator,
+  phase: NonNullable<NonNullable<Payload["areas"][number]["phases"]>["mount"]>,
+): void {
+  for (let i = 0; i < acc.hist.length; i++) acc.hist[i] = (acc.hist[i] ?? 0) + (phase.hist[i] ?? 0);
+  acc.renders += phase.renders;
+  acc.slow += phase.slow;
+  if (phase.renders > 0) acc.min = Math.min(acc.min, phase.min);
+  acc.max = Math.max(acc.max, phase.max);
+}
+
 function addLongTasks(acc: Accumulator, tasks: Payload["longTasks"], sessionId: string): void {
   for (const task of tasks) {
     acc.longTasks += task.count;
@@ -143,7 +161,7 @@ const bySlowest = (a: Timings, b: Timings) => b.p75 - a.p75 || b.renders - a.ren
 /** Merges stored batches into the report the CLI and web viewer show. */
 export function buildReport(batches: readonly StoredBatch[], now: Date = new Date()): Report {
   const totals = accumulator();
-  const areas = new Map<string, Accumulator & { id: string; route: string }>();
+  const areas = new Map<string, Accumulator & { id: string; route: string; mount: Accumulator; update: Accumulator }>();
   const routes = new Map<string, Accumulator>();
   const devices = new Map<string, Accumulator>();
   const connections = new Map<string, Accumulator>();
@@ -175,10 +193,12 @@ export function buildReport(batches: readonly StoredBatch[], now: Date = new Dat
       const key = `${area.route}\u0000${area.id}`;
       let areaAcc = areas.get(key);
       if (!areaAcc) {
-        areaAcc = { ...accumulator(), id: area.id, route: area.route };
+        areaAcc = { ...accumulator(), id: area.id, route: area.route, mount: accumulator(), update: accumulator() };
         areas.set(key, areaAcc);
       }
       addArea(areaAcc, area, sessionId);
+      if (area.phases?.mount) addPhase(areaAcc.mount, area.phases.mount);
+      if (area.phases?.update) addPhase(areaAcc.update, area.phases.update);
       addArea(get(routes, area.route), area, sessionId);
       for (const acc of groups) addArea(acc, area, sessionId);
     }
@@ -207,6 +227,8 @@ export function buildReport(batches: readonly StoredBatch[], now: Date = new Dat
       ...timings(acc),
       sessions: acc.sessions.size,
       mounts: acc.mounts,
+      ...(acc.mount.renders > 0 && { mount: timings(acc.mount) }),
+      ...(acc.update.renders > 0 && { update: timings(acc.update) }),
       longTasks: acc.longTasks,
       longTaskMaxMs: acc.longTaskMaxMs,
     })).sort(bySlowest),

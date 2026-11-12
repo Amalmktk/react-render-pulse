@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { buildReport, deviceClass } from "../src/core/report.js";
-import { area, batch } from "./fixtures.js";
+import { area, batch, splitArea } from "./fixtures.js";
 
 describe("buildReport", () => {
   it("returns an empty report for no batches", () => {
@@ -32,6 +32,40 @@ describe("buildReport", () => {
     const [table] = report.areas;
     expect(table?.p50).toBeLessThanOrEqual(2);
     expect(table?.p95).toBeGreaterThan(150);
+  });
+
+  it("reports first renders and updates separately when clients send the split", () => {
+    // each page view: one slow 40 ms first render, nine fast 2 ms updates
+    const view = (session: string) =>
+      batch({ session, areas: [splitArea("table", { mountMs: 40, mounts: 1, updateMs: 2, updates: 9 })] });
+
+    const [table] = buildReport([view("a"), view("b")]).areas;
+
+    expect(table?.mount).toMatchObject({ renders: 2, slow: 2, max: 40 });
+    expect(table?.update).toMatchObject({ renders: 18, slow: 0, max: 2 });
+    // the first render's cost doesn't leak into the update numbers...
+    expect(table?.update?.p95).toBeLessThanOrEqual(2);
+    // ...though it still shows in the area's overall tail
+    expect(table?.max).toBe(40);
+    expect(table?.renders).toBe(20);
+  });
+
+  it("merges the split across batches, with and without it", () => {
+    const [table] = buildReport([
+      batch({ session: "new", areas: [splitArea("table", { mountMs: 6, mounts: 1, updateMs: 3, updates: 4 })] }),
+      batch({ session: "old", areas: [area("table", 3, 5)] }), // client before 1.1: no split
+    ]).areas;
+
+    // the overall numbers cover both batches; the split covers only the batch that had it
+    expect(table?.renders).toBe(10);
+    expect(table?.mount?.renders).toBe(1);
+    expect(table?.update?.renders).toBe(4);
+  });
+
+  it("leaves the split out for data from clients that don't send it", () => {
+    const [table] = buildReport([batch({ areas: [area("table", 5, 3)] })]).areas;
+    expect(table?.mount).toBeUndefined();
+    expect(table?.update).toBeUndefined();
   });
 
   it("keeps the same area on different routes apart", () => {

@@ -8,6 +8,7 @@ export type {
   Mode,
   ModeOption,
   Payload,
+  PhaseTimings,
   RenderEvent,
   RenderPhase,
   SessionInfo,

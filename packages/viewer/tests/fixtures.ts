@@ -23,6 +23,40 @@ export function area(id: string, ms: number, renders: number, route = "/orders")
   };
 }
 
+/**
+ * An area as a 1.1+ client reports it: `mountMs` for each of `mounts` first renders and `updateMs` for each
+ * of `updates` later renders, with the area totals covering both and the same data split by phase.
+ */
+export function splitArea(
+  id: string,
+  { mountMs, mounts, updateMs, updates }: { mountMs: number; mounts: number; updateMs: number; updates: number },
+  route = "/orders",
+): AreaReport {
+  const first = area(id, mountMs, mounts, route);
+  const later = area(id, updateMs, updates, route);
+  const phase = (a: AreaReport) => ({
+    renders: a.renders,
+    slow: a.slow,
+    totalMs: a.totalMs,
+    min: a.min,
+    max: a.max,
+    p50: a.p50,
+    p75: a.p75,
+    p95: a.p95,
+    hist: a.hist,
+  });
+  return {
+    ...area(id, Math.min(mountMs, updateMs), mounts + updates, route),
+    mounts,
+    slow: first.slow + later.slow,
+    totalMs: first.totalMs + later.totalMs,
+    min: Math.min(mountMs, updateMs),
+    max: Math.max(mountMs, updateMs),
+    hist: first.hist.map((n, i) => n + (later.hist[i] ?? 0)),
+    phases: { mount: phase(first), update: phase(later) },
+  };
+}
+
 export function batch(options: {
   session?: string;
   receivedAt?: string;
