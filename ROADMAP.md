@@ -17,7 +17,7 @@ What's built, and what's planned next. Plans can change, and there are no dates.
 - [x] Examples: Vite, Next.js App Router and Pages Router, React Router, a Vercel collector
 - [x] React version matrix in CI; overhead measured, budgeted and published per mode
 - [x] Publish 1.0.0 to npm
-- [ ] Run on a real site and publish findings
+- [x] Run on a real site and publish findings: [I pointed my React performance tool at my own portfolio](https://medium.com/@amalmktk/i-pointed-my-react-performance-tool-at-my-own-portfolio-the-first-problem-it-found-was-mine-494152650197), with live data at [itzamal.in](https://itzamal.in/#performance)
 
 ## v1.5 — next
 

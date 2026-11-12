@@ -4,7 +4,13 @@
 
 <!-- Publishing notes (delete before posting):
 - Numbers are from https://www.itzamal.in/api/render-pulse-stats, 2026-10-28 to 2026-11-11. Refresh them before posting.
-- Images: blog/images/live-metrics-overview.png and live-metrics-all.png (captured 2026-11-12). Upload them to Medium by hand.
+- Images (upload by hand in Medium; click the "+" on an empty line, then the image icon):
+  1. blog/images/live-metrics-overview.png goes right after the paragraph ending "...and a comparison between the current deploy and the previous one." (section "Setting it up on my portfolio"). Caption: The live "How this page performs" section on itzamal.in.
+  2. blog/images/live-metrics-all.png goes right after the paragraph ending "...(0.9 ms against 1.9 ms at p75)." (section "What the first two weeks showed"). Caption: All the metrics, expanded.
+  Optional: use live-metrics-overview.png as the story's cover image too (click the "+" at the very top, or use the image menu after publishing the draft).
+  The Markdown below already has both images in those spots, so a preview from VS Code shows them.
+- Checked against the live stats on 2026-11-12 (31 views, p75 1.4 ms, slow 1.5%, header p75 0.9 ms, header worst long frame 262 ms, outside-React 86.4% with a worst frame of 751 ms, 914 ms outlier, device p75 1.9 / 0.9 ms). If you post on a later day, re-check these and retake the screenshots.
+- The follow-up post is a public promise ("a few weeks"). Keep it only if you will write it.
 - Medium does not convert Markdown on paste. Preview this file in VS Code (Ctrl+Shift+V) and copy from the preview; for code blocks type ``` on a new line in Medium.
 - Tags: React, JavaScript, Web Performance, Frontend, Open Source.
 -->
@@ -37,7 +43,7 @@ React renders a component tree in order, top to bottom, in one synchronous pass.
 
 - **Only committed renders count.** React sometimes starts a render and throws it away. The time is recorded in a layout effect, which only runs when React commits the render to the screen.
 - **First renders and updates are tracked separately.** The first render is a *mount*; every one after it is an *update*.
-- **It's cheap.** In benchmarks it costs about **0.01 ms per measured render**, and the client is **under 4 kB gzipped**.
+- **It's cheap.** In benchmarks it costs about **0.01 ms per measured render**, and the client is about **3.7 kB** (minified and brotli-compressed).
 - **If React's profiling build is present**, it switches to React's own `<Profiler>` timings automatically.
 
 There's also a hook, `useRenderMonitor("header")`, for when wrapping isn't convenient. Hold on to that one; it comes back later.
@@ -95,7 +101,7 @@ The numbers are small: **31 page views** between October 28 and November 11. I'l
 
 ![All the metrics: render time by section, what blocked the main thread, renders per page view, the slowest renders, release comparison and device split](images/live-metrics-all.png)
 
-**The suspicious part: the header.** In the first few days, the slowest renders were the header's *first* render: **26 ms** on a high-end device, **21 ms** on another, and **18 ms** on a mid-range one. The header was also blamed for several long frames, one of them **151 ms**.
+**The suspicious part: the header.** In the first few days, the slowest renders were the header's *first* render: **26 ms** on a high-end device, **21 ms** on another, and **18 ms** on a mid-range one. The header was also blamed for 10 long frames, the worst of them **262 ms**.
 
 My header is a logo and six links. It shouldn't take 26 ms to render anywhere.
 
@@ -114,7 +120,7 @@ The hook can't put a marker *after* the component, because a hook lives inside i
 
 What I hadn't thought through: on first load, the header is the **first thing in the app**. React renders it, then the entire page below it, then commits. So the header's "first render" timer was really timing **the whole site's first render**. The 26 ms was the whole page, not the header.
 
-The same overlap explains the long frames. During page load, the header's measured window covered everything, so any long frame during that time was blamed on the header.
+The same overlap very likely explains the long frames. During page load, the header's measured window covered everything, so any long frame during that time was blamed on the header. (The live stats group blame over the whole 30 days, so I can't yet show that the header's share dropped after the fix. That's one more thing the next few weeks of data will settle.)
 
 The fix is a few lines: measure the header the same way as everything else, with the wrapper inside the component.
 
@@ -146,13 +152,13 @@ I wanted to turn that into a tidy "found it, fixed it" story. I can't, yet. Here
 - Removing the backdrop blur on the cards didn't help, and neither did removing the page's grain texture. The slow runs showed up with and without them.
 - So the number isn't a stable property of that component. My working guess is that on a slow device the render gets interleaved with other work, and in lightweight mode the markers measure wall-clock time between them. I tried to reproduce that in a unit test and couldn't, so it stays a guess.
 
-What this shows is the limit of the cheap measurement: one 914 ms sample from one visit is a lead, not a diagnosis. It's why the next version of the library is going to report how many renders fell into each range for first renders and updates separately, and why I want more than 31 visits before changing code over it.
+What this shows is the limit of a single number: one 914 ms sample from one visit is a lead, not a diagnosis. It's why I added the one thing that was missing. Version 1.1 of the library, released on November 12, reports **first renders and updates separately**, each with its own percentiles. Until now both were mixed into one number, so a slow first render could hide slow updates, and the other way round. My site started collecting the split the same day. In a few weeks, the Performance section will show first renders next to updates for every section, and I'll know whether that 914 ms is a one-off or a pattern.
 
 ## What's still open
 
-The other notable number is the long frames. **86% of the main-thread time lost to frames over 50 ms happens outside any React render**, and some of those frames are up to hundreds of milliseconds. That's a real stutter, and React isn't the cause. My guesses are initial script loading and the animated canvas background on the home page. I can reproduce big outside-React frames on a throttled phone in the lab, but I haven't isolated which script it is.
+The other notable number is the long frames. **86% of the main-thread time lost to frames over 50 ms happens outside any React render**, and the worst of those frames lasted **751 ms**. That's a real stutter, and React isn't the cause. My guesses are initial script loading and the animated canvas background on the home page. I can reproduce big outside-React frames on a throttled phone in the lab, but I haven't isolated which script it is.
 
-Because every batch carries the deployed commit, the site will show the next fix as a before/after on the live page, measured on real visitors' devices rather than on my laptop.
+Because every batch carries the deployed commit, the site will show the next fix as a before/after on the live page, measured on real visitors' devices rather than on my laptop. I plan to write a follow-up once the first-render and update data has a few hundred visits behind it.
 
 ## Try it
 
@@ -166,4 +172,4 @@ npm i react-render-pulse
 - GitHub: https://github.com/Amalmktk/react-render-pulse
 - The live data from my site: https://itzamal.in/#performance
 
-It's open source and works with React 18 and 19. Feedback and issues are very welcome, especially if you find something like my header problem in your own app.
+It's open source and works with React 18 and 19. If you already use it, update the collector to 1.1 first and the client second (the collector rejects fields it doesn't know). Feedback and issues are very welcome, especially if you find something like my header problem in your own app.
